@@ -31,7 +31,7 @@ columns explicitly, 1:1 with the `BaseEntity` mapping):
 - FKs stored as `<ref>_id BIGINT` internally, exposed to FE only as `<ref>_uuid UUID`. Service layer resolves incoming `<ref>_uuid` via `findByUuid` (soft-delete filter is automatic, no `AndDeletedAtIsNull` suffix needed), never accepts `<ref>_id` from client.
 - Audit columns on every table:
   `created_at TIMESTAMPTZ NOT NULL DEFAULT now(), created_by BIGINT NULL,`
-  `updated_at TIMESTAMPTZ NULL, updated_by BIGINT NULL,`
+  `updated_at TIMESTAMPTZ NULL DEFAULT now(), updated_by BIGINT NULL,`
   `deleted_at TIMESTAMPTZ NULL, deleted_by BIGINT NULL`
   `*_by` holds the actor's internal `id` (plain `BIGINT NULL`, no FK constraint so history survives user deletes / system actions allowed). `*_at` is always `TIMESTAMPTZ`.
 - Soft delete via `deleted_at`/`deleted_by`. The filter is automatic through

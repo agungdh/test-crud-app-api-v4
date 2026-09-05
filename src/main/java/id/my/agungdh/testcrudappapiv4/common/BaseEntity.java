@@ -52,7 +52,7 @@ public abstract class BaseEntity {
     private Long createdBy;
 
     @LastModifiedDate
-    @Column(name = "updated_at", columnDefinition = "TIMESTAMPTZ")
+    @Column(name = "updated_at", columnDefinition = "TIMESTAMPTZ DEFAULT now()")
     private Instant updatedAt;
 
     @LastModifiedBy
@@ -72,6 +72,9 @@ public abstract class BaseEntity {
         }
         if (createdAt == null) {
             createdAt = Instant.now();
+        }
+        if (updatedAt == null) {
+            updatedAt = Instant.now();
         }
     }
 
