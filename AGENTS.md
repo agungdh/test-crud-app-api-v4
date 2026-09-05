@@ -56,6 +56,9 @@ columns explicitly, 1:1 with the `BaseEntity` mapping):
 ## DTO / API conventions
 
 - All DTOs are Java `record`s.
+- JSON is `snake_case` globally (`spring.jackson.property-naming-strategy:
+  SNAKE_CASE`), e.g. `birth_date`, `next_cursor`, `has_next`. Java stays
+  `camelCase`; never add per-field `@JsonProperty` for casing.
 - Entity ↔ DTO mapping via MapStruct `@Mapper` interfaces only (no manual mapping); `componentModel = "spring"`, ignore `id` / `<ref>_id`, map FK as e.g. `@Mapping(target = "authorUuid", source = "author.uuid")`.
 - Request/response DTOs carry `uuid` / `<ref>_uuid` only. `id` / `<ref>_id` fields are forbidden in DTOs and JSON (MapStruct mappers must ignore them; use a lookup for FK uuids).
 - List endpoints use cursor pagination for infinite scroll: query params

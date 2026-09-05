@@ -5,6 +5,8 @@ logging:
 spring:
   application:
     name: test-crud-app-api-v4
+  jackson:
+    property-naming-strategy: SNAKE_CASE
   threads:
     virtual:
       enabled: true
