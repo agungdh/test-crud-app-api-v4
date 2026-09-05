@@ -35,6 +35,9 @@ columns explicitly, 1:1 with the `BaseEntity` mapping):
   `*_by` holds the actor's internal `id` (plain `BIGINT NULL`, no FK constraint so history survives user deletes / system actions allowed). `*_at` is always `TIMESTAMPTZ`.
   `created_at` is deliberately nullable (bulk imports may not know it); app
   inserts still default it to `now()` via JPA auditing + `@PrePersist`.
+- Audit columns (`createdAt/createdBy/updatedAt/updatedBy/deletedAt/deletedBy`)
+  are internal secrets — NEVER expose them in DTOs/JSON. Response DTOs carry
+  only business fields + `uuid`.
 - Soft delete via `deleted_at`/`deleted_by`. The filter is automatic through
   `@SQLRestriction("deleted_at IS NULL")` on `BaseEntity` (+ re-declared per
   entity) — do NOT add manual `AndDeletedAtIsNull` query suffixes.
