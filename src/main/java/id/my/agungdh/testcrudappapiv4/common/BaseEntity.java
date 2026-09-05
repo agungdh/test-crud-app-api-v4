@@ -44,7 +44,7 @@ public abstract class BaseEntity {
     private UUID uuid;
 
     @CreatedDate
-    @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "TIMESTAMPTZ DEFAULT now()")
+    @Column(name = "created_at", updatable = false, columnDefinition = "TIMESTAMPTZ DEFAULT now()")
     private Instant createdAt;
 
     @CreatedBy

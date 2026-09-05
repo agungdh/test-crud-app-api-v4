@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS person (
     address TEXT NOT NULL,
     birth_date DATE NOT NULL,
     male BOOLEAN NOT NULL,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    created_at TIMESTAMPTZ NULL DEFAULT now(),
     created_by BIGINT NULL,
     updated_at TIMESTAMPTZ NULL DEFAULT now(),
     updated_by BIGINT NULL,
@@ -16,3 +16,6 @@ CREATE TABLE IF NOT EXISTS person (
 );
 
 CREATE INDEX IF NOT EXISTS person_uuid_idx ON person USING HASH (uuid);
+
+-- created_at is nullable (bulk imports may not know it); safe to re-run.
+ALTER TABLE IF EXISTS person ALTER COLUMN created_at DROP NOT NULL;

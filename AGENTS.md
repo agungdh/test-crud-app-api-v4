@@ -30,10 +30,11 @@ columns explicitly, 1:1 with the `BaseEntity` mapping):
   `CREATE INDEX IF NOT EXISTS <table>_uuid_idx ON <table> USING HASH (uuid);`
 - FKs stored as `<ref>_id BIGINT` internally, exposed to FE only as `<ref>_uuid UUID`. Service layer resolves incoming `<ref>_uuid` via `findByUuid` (soft-delete filter is automatic, no `AndDeletedAtIsNull` suffix needed), never accepts `<ref>_id` from client.
 - Audit columns on every table:
-  `created_at TIMESTAMPTZ NOT NULL DEFAULT now(), created_by BIGINT NULL,`
+  `created_at TIMESTAMPTZ NULL DEFAULT now(), created_by BIGINT NULL,`
   `updated_at TIMESTAMPTZ NULL DEFAULT now(), updated_by BIGINT NULL,`
-  `deleted_at TIMESTAMPTZ NULL, deleted_by BIGINT NULL`
   `*_by` holds the actor's internal `id` (plain `BIGINT NULL`, no FK constraint so history survives user deletes / system actions allowed). `*_at` is always `TIMESTAMPTZ`.
+  `created_at` is deliberately nullable (bulk imports may not know it); app
+  inserts still default it to `now()` via JPA auditing + `@PrePersist`.
 - Soft delete via `deleted_at`/`deleted_by`. The filter is automatic through
   `@SQLRestriction("deleted_at IS NULL")` on `BaseEntity` (+ re-declared per
   entity) — do NOT add manual `AndDeletedAtIsNull` query suffixes.
