@@ -55,6 +55,12 @@ columns explicitly, 1:1 with the `BaseEntity` mapping):
 - All DTOs are Java `record`s.
 - Entity ↔ DTO mapping via MapStruct `@Mapper` interfaces only (no manual mapping); `componentModel = "spring"`, ignore `id` / `<ref>_id`, map FK as e.g. `@Mapping(target = "authorUuid", source = "author.uuid")`.
 - Request/response DTOs carry `uuid` / `<ref>_uuid` only. `id` / `<ref>_id` fields are forbidden in DTOs and JSON (MapStruct mappers must ignore them; use a lookup for FK uuids).
+- List endpoints use cursor pagination for infinite scroll: query params
+  `cursor` (uuid of last row, omit for first page), `size` (1–100, default 20),
+  `sort` (`field,dir`, default `id,desc`; allowed fields per endpoint).
+  Response is `common.CursorPageResponse` (`content`, `nextCursor`, `hasNext`,
+  `size`). Keyset logic lives in a `*CursorRepository` (Criteria API, `id DESC`
+  tiebreaker); never use offset `Pageable` for FE lists.
 
 ## Gotchas — read before coding
 

@@ -1,11 +1,12 @@
 package id.my.agungdh.testcrudappapiv4.person;
 
+import id.my.agungdh.testcrudappapiv4.common.CursorPageResponse;
 import id.my.agungdh.testcrudappapiv4.person.dto.PersonRequest;
 import id.my.agungdh.testcrudappapiv4.person.dto.PersonResponse;
+import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,7 +17,10 @@ import org.springframework.web.server.ResponseStatusException;
 public class PersonService {
 
     private final PersonRepository personRepository;
+    private final PersonCursorRepository personCursorRepository;
     private final PersonMapper personMapper;
+
+    private static final Set<String> SORT_FIELDS = Set.of("id", "name", "birthDate", "createdAt");
 
     @Transactional
     public PersonResponse create(PersonRequest request) {
@@ -30,8 +34,40 @@ public class PersonService {
     }
 
     @Transactional(readOnly = true)
-    public Page<PersonResponse> list(Pageable pageable) {
-        return personRepository.findAll(pageable).map(personMapper::toResponse);
+    public CursorPageResponse<PersonResponse> list(UUID cursor, int size, String sort) {
+        if (size < 1 || size > 100) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Size must be between 1 and 100");
+        }
+        String field = "id";
+        boolean desc = true;
+        if (sort != null && !sort.isBlank()) {
+            String[] parts = sort.split(",", 2);
+            field = parts[0].trim();
+            if (!SORT_FIELDS.contains(field)) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Invalid sort field: " + field + " (allowed: id, name, birthDate, createdAt)");
+            }
+            if (parts.length > 1) {
+                String direction = parts[1].trim().toLowerCase();
+                if (direction.equals("asc")) {
+                    desc = false;
+                } else if (!direction.equals("desc")) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                            "Invalid sort direction: " + parts[1].trim() + " (allowed: asc, desc)");
+                }
+            }
+        }
+        Person cursorEntity = null;
+        if (cursor != null) {
+            cursorEntity = personRepository.findByUuid(cursor)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid cursor: " + cursor));
+        }
+        List<Person> rows = personCursorRepository.findNext(field, desc, cursorEntity, size + 1);
+        boolean hasNext = rows.size() > size;
+        List<Person> page = hasNext ? rows.subList(0, size) : rows;
+        UUID nextCursor = hasNext && !page.isEmpty() ? page.get(page.size() - 1).getUuid() : null;
+        List<PersonResponse> content = page.stream().map(personMapper::toResponse).toList();
+        return new CursorPageResponse<>(content, nextCursor, hasNext, size);
     }
 
     @Transactional
