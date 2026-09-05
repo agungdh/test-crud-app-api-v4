@@ -14,18 +14,37 @@ Single-module Spring Boot 4.1.1 / Java 25 (toolchain) / Gradle 9.7.1 wrapper pro
 
 ## DB / entity conventions (mandatory for every table)
 
-Every table MUST follow this shape:
+Every entity MUST extend `common.BaseEntity` (a `@MappedSuperclass` carrying
+`id`, `uuid`, `createdAt/createdBy`, `updatedAt/updatedBy`,
+`deletedAt/deletedBy`). Entities must NOT redeclare any of those fields.
+`BaseEntity` also carries `@SQLRestriction("deleted_at IS NULL")` so every
+JPQL/Criteria query is auto-filtered to live rows; each entity re-declares the
+same `@SQLRestriction` explicitly (inheritance-safe belt and suspenders).
+MapStruct mappers must ignore `id` and all audit fields.
+
+Every table MUST follow this shape (migration SQL still declares the base
+columns explicitly, 1:1 with the `BaseEntity` mapping):
 
 - `id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY` — internal only, **never exposed to FE** (no JSON, no DTO, no URL param).
 - `uuid UUID NOT NULL DEFAULT gen_random_uuid()` (UUID v4). Hash index, **non-unique** (Postgres HASH indexes can't be unique; v4 collision risk is negligible so this is accepted):
   `CREATE INDEX IF NOT EXISTS <table>_uuid_idx ON <table> USING HASH (uuid);`
-- FKs stored as `<ref>_id BIGINT` internally, exposed to FE only as `<ref>_uuid UUID`. Service layer resolves incoming `<ref>_uuid` via `findByUuidAndDeletedAtIsNull`, never accepts `<ref>_id` from client.
+- FKs stored as `<ref>_id BIGINT` internally, exposed to FE only as `<ref>_uuid UUID`. Service layer resolves incoming `<ref>_uuid` via `findByUuid` (soft-delete filter is automatic, no `AndDeletedAtIsNull` suffix needed), never accepts `<ref>_id` from client.
 - Audit columns on every table:
   `created_at TIMESTAMPTZ NOT NULL DEFAULT now(), created_by BIGINT NULL,`
   `updated_at TIMESTAMPTZ NULL, updated_by BIGINT NULL,`
   `deleted_at TIMESTAMPTZ NULL, deleted_by BIGINT NULL`
   `*_by` holds the actor's internal `id` (plain `BIGINT NULL`, no FK constraint so history survives user deletes / system actions allowed). `*_at` is always `TIMESTAMPTZ`.
-- Soft delete via `deleted_at`/`deleted_by`. All app queries filter `WHERE deleted_at IS NULL`.
+- Soft delete via `deleted_at`/`deleted_by`. The filter is automatic through
+  `@SQLRestriction("deleted_at IS NULL")` on `BaseEntity` (+ re-declared per
+  entity) — do NOT add manual `AndDeletedAtIsNull` query suffixes.
+  NEVER call `repository.delete*`; service layer soft-deletes via
+  `entity.softDelete(actorId)` + save. Admin/restore flows needing deleted rows
+  must use an explicit native-query escape hatch (e.g.
+  `findIncludingDeletedByUuid`), never widen the default queries.
+- JPA auditing is enabled (`config.JpaAuditingConfig` + `AuditorAware<Long>`);
+  `createdAt/createdBy/updatedAt/updatedBy` are filled automatically.
+  `deletedAt/deletedBy` are managed manually by the service. Until auth exists,
+  `AuditorAware` returns empty (all `*_by` stay `NULL` for system actions).
 - Any logical UNIQUE becomes a **partial unique index**, never a table-level `UNIQUE` constraint, e.g.:
   `CREATE UNIQUE INDEX IF NOT EXISTS <table>_<col>_uniq ON <table> (<col>) WHERE deleted_at IS NULL;`
   Same for composite uniques. Plain (non-unique) lookups on soft-deletable columns should also carry `WHERE deleted_at IS NULL` when the index supports it.
