@@ -38,3 +38,31 @@ dependencies {
 tasks.withType<Test> {
     useJUnitPlatform()
 }
+
+// Docker helper tasks (pengganti target Makefile init-minio / recreate-postgres).
+// Nilai bisa di-override via environment, mis. MINIO_USER=foo ./gradlew initMinio
+val minioUser: String = providers.environmentVariable("MINIO_USER").getOrElse("admin")
+val minioPassword: String = providers.environmentVariable("MINIO_PASSWORD").getOrElse("admin123")
+val minioEndpoint: String = providers.environmentVariable("MINIO_ENDPOINT").getOrElse("http://127.0.0.1:9000")
+val minioAlias: String = providers.environmentVariable("MINIO_ALIAS").getOrElse("local")
+val appBucket: String = providers.environmentVariable("BUCKET").getOrElse("testcrud")
+
+tasks.register<Exec>("initMinio") {
+    group = "docker"
+    description = "Init MinIO bucket (idempotent, default: testcrud)"
+    commandLine(
+        "sh", "-c",
+        "docker compose exec -T minio mcli alias set $minioAlias $minioEndpoint $minioUser $minioPassword" +
+                " && docker compose exec -T minio mcli mb --ignore-existing $minioAlias/$appBucket" +
+                " && docker compose exec -T minio mcli ls $minioAlias/"
+    )
+}
+
+tasks.register<Exec>("recreatePostgres") {
+    group = "docker"
+    description = "Stop postgres, hapus volume, start lagi (DATA HILANG)"
+    commandLine(
+        "sh", "-c",
+        "docker compose stop postgres && docker compose rm -f -v postgres && docker compose up -d postgres"
+    )
+}
