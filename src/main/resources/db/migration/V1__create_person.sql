@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS person (
     male BOOLEAN NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     created_by BIGINT NULL,
-    updated_at TIMESTAMPTZ NULL,
+    updated_at TIMESTAMPTZ NULL DEFAULT now(),
     updated_by BIGINT NULL,
     deleted_at TIMESTAMPTZ NULL,
     deleted_by BIGINT NULL
