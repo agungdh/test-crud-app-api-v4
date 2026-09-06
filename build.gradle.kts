@@ -71,3 +71,19 @@ tasks.register<Exec>("recreatePostgres") {
         "docker compose stop postgres && docker compose rm -f -v postgres && docker compose up -d postgres"
     )
 }
+
+// Seeder: ./gradlew seedPersons [-Pcount=500] (default 1000).
+// Headless (tidak pakai port 8080), butuh postgres up seperti bootRun/test.
+val seedCount: String = providers.gradleProperty("count").getOrElse("1000")
+
+tasks.register<JavaExec>("seedPersons") {
+    group = "seed"
+    description = "Seed person dummy (default 1000, override: -Pcount=N)"
+    dependsOn("classes")
+    classpath(sourceSets["main"].runtimeClasspath)
+    mainClass.set("id.my.agungdh.testcrudappapiv4.person.PersonSeeder")
+    args("--count=$seedCount")
+    // One-shot seeder: matikan devtools restart (restart-classloader bikin
+    // JVM exit 1 walau seeding sukses).
+    systemProperty("spring.devtools.restart.enabled", "false")
+}
