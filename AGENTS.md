@@ -67,6 +67,11 @@ columns explicitly, 1:1 with the `BaseEntity` mapping):
   Response is `common.CursorPageResponse` (`content`, `nextCursor`, `hasNext`,
   `size`). Keyset logic lives in a `*CursorRepository` (Criteria API, `id DESC`
   tiebreaker); never use offset `Pageable` for FE lists.
+- Page size is capped globally at 100: `common.CursorPagination` is the single
+  source of truth (`DEFAULT_SIZE = 20`, `MAX_SIZE = 100`,
+  `DEFAULT_SIZE_VALUE` for `@RequestParam(defaultValue = ...)`). Every list
+  service MUST validate via `CursorPagination.requireValidSize(size)` (400 on
+  out-of-range) — never inline `1..100` bounds per service/endpoint.
 - Update endpoints are PUT full-replace only (never PATCH): `@PutMapping("/{uuid}")` + `@Valid @RequestBody` reuses the same create Request DTO, all required fields must be present (`@NotBlank/@NotNull` → missing/null is 400); update mappers must declare `nullValuePropertyMappingStrategy = SET_TO_NULL` so an explicit `null` on a nullable/optional field overwrites to NULL instead of being ignored. No `@PatchMapping`, no partial DTOs, no manual `if (field != null)` guards; `IGNORE` strategy is forbidden for updates.
 
 ## Gotchas — read before coding

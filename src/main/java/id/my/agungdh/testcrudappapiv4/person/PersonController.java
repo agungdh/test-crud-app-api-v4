@@ -1,6 +1,7 @@
 package id.my.agungdh.testcrudappapiv4.person;
 
 import id.my.agungdh.testcrudappapiv4.common.CursorPageResponse;
+import id.my.agungdh.testcrudappapiv4.common.CursorPagination;
 import id.my.agungdh.testcrudappapiv4.person.dto.PersonRequest;
 import id.my.agungdh.testcrudappapiv4.person.dto.PersonResponse;
 import jakarta.validation.Valid;
@@ -34,7 +35,7 @@ public class PersonController {
     @GetMapping
     public ResponseEntity<CursorPageResponse<PersonResponse>> list(
             @RequestParam(required = false) UUID cursor,
-            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = CursorPagination.DEFAULT_SIZE_VALUE) int size,
             @RequestParam(required = false) String sort) {
         return ResponseEntity.ok(personService.list(cursor, size, sort));
     }

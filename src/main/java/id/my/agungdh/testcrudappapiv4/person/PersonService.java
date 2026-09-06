@@ -1,10 +1,11 @@
 package id.my.agungdh.testcrudappapiv4.person;
 
 import id.my.agungdh.testcrudappapiv4.common.CursorPageResponse;
+import id.my.agungdh.testcrudappapiv4.common.CursorPagination;
 import id.my.agungdh.testcrudappapiv4.person.dto.PersonRequest;
 import id.my.agungdh.testcrudappapiv4.person.dto.PersonResponse;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -20,7 +21,17 @@ public class PersonService {
     private final PersonCursorRepository personCursorRepository;
     private final PersonMapper personMapper;
 
-    private static final Set<String> SORT_FIELDS = Set.of("id", "name", "birthDate", "createdAt");
+    /**
+     * FE-facing sort keys (snake_case) → entity property (camelCase).
+     * camelCase lama tetap diterima agar klien lama tidak pecah.
+     */
+    private static final Map<String, String> SORT_FIELD_MAP = Map.of(
+            "id", "id",
+            "name", "name",
+            "birth_date", "birthDate",
+            "birthDate", "birthDate",
+            "created_at", "createdAt",
+            "createdAt", "createdAt");
 
     @Transactional
     public PersonResponse create(PersonRequest request) {
@@ -35,17 +46,16 @@ public class PersonService {
 
     @Transactional(readOnly = true)
     public CursorPageResponse<PersonResponse> list(UUID cursor, int size, String sort) {
-        if (size < 1 || size > 100) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Size must be between 1 and 100");
-        }
+        CursorPagination.requireValidSize(size);
         String field = "id";
         boolean desc = true;
         if (sort != null && !sort.isBlank()) {
             String[] parts = sort.split(",", 2);
-            field = parts[0].trim();
-            if (!SORT_FIELDS.contains(field)) {
+            String sortKey = parts[0].trim();
+            field = SORT_FIELD_MAP.get(sortKey);
+            if (field == null) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                        "Invalid sort field: " + field + " (allowed: id, name, birthDate, createdAt)");
+                        "Invalid sort field: " + sortKey + " (allowed: id, name, birth_date, created_at)");
             }
             if (parts.length > 1) {
                 String direction = parts[1].trim().toLowerCase();

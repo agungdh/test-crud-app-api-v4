@@ -5,6 +5,13 @@ logging:
 spring:
   application:
     name: test-crud-app-api-v4
+  web:
+    error:
+      # Jangan bocorkan stacktrace; jangan bocorkan binding-errors camelCase
+      # bawaan Spring — GlobalExceptionHandler adalah satu-satunya sumber error.
+      include-stacktrace: never
+      include-message: always
+      include-binding-errors: never
   jackson:
     property-naming-strategy: SNAKE_CASE
   threads:
