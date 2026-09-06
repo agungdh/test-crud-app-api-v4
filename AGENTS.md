@@ -67,6 +67,7 @@ columns explicitly, 1:1 with the `BaseEntity` mapping):
   Response is `common.CursorPageResponse` (`content`, `nextCursor`, `hasNext`,
   `size`). Keyset logic lives in a `*CursorRepository` (Criteria API, `id DESC`
   tiebreaker); never use offset `Pageable` for FE lists.
+- Update endpoints are PUT full-replace only (never PATCH): `@PutMapping("/{uuid}")` + `@Valid @RequestBody` reuses the same create Request DTO, all required fields must be present (`@NotBlank/@NotNull` → missing/null is 400); update mappers must declare `nullValuePropertyMappingStrategy = SET_TO_NULL` so an explicit `null` on a nullable/optional field overwrites to NULL instead of being ignored. No `@PatchMapping`, no partial DTOs, no manual `if (field != null)` guards; `IGNORE` strategy is forbidden for updates.
 
 ## Gotchas — read before coding
 
