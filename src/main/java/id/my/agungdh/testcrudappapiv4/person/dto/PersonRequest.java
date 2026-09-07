@@ -1,6 +1,5 @@
 package id.my.agungdh.testcrudappapiv4.person.dto;
 
-import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Past;
@@ -17,7 +16,6 @@ public record PersonRequest(
 
         @NotNull(message = "Birth date is required")
         @Past(message = "Birth date must be in the past")
-        @Future(message = "Birth date must be in the future")
         LocalDate birthDate,
 
         @NotNull(message = "Gender is required (true for male, false for female)")
