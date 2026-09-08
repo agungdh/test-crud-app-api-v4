@@ -10,7 +10,6 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -32,13 +31,9 @@ public class PersonController {
 
     private final PersonService personService;
 
-    /** View: GET /person (server-render 20 data pertama). */
+    /** View: GET /person (cuma HTML shell, datanya di-fetch dari /api/person). */
     @GetMapping("/person")
-    public String view(Model model) {
-        var page = personService.list(null, 20, null);
-        model.addAttribute("persons", page.content());
-        model.addAttribute("hasNext", page.hasNext());
-        model.addAttribute("nextCursor", page.nextCursor());
+    public String view() {
         return "pages/persons";
     }
 

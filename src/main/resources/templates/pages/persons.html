@@ -1,19 +1,18 @@
-<!-- Halaman Persons: view di GET /person, datanya dari GET /api/person (JSON).
-     Controller mengisi ${persons}, ${hasNext}, ${nextCursor} buat render pertama. -->
+<!-- Halaman Persons (GET /person): cuma HTML shell.
+     Semua data diambil via fetch ke GET /api/person (JSON). -->
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout/app :: shell(title='Persons', activeMenu='persons', content=~{::content})}">
 <body>
 <th:block th:fragment="content">
     <h1>Persons</h1>
-    <p>Data JSON-nya ada di <a th:href="@{/api/person}">/api/person</a>
-        (mis. <a th:href="@{/api/person(size=5)}">/api/person?size=5</a>).</p>
+    <p>Data di bawah diambil via <code>fetch('/api/person')</code>, bukan render server.</p>
 
-    <!-- State kosong -->
-    <p th:if="${#lists.isEmpty(persons)}">Belum ada data. Tambah via POST /api/person dulu.</p>
+    <p id="state-loading">Loading…</p>
+    <p id="state-empty" hidden>Belum ada data. Tambah via POST /api/person dulu.</p>
+    <p id="state-error" hidden></p>
 
-    <!-- Tabel data -->
-    <table th:unless="${#lists.isEmpty(persons)}">
+    <table id="person-table" hidden>
         <thead>
         <tr>
             <th>UUID</th>
@@ -23,24 +22,68 @@
             <th>Male</th>
         </tr>
         </thead>
-        <tbody>
-        <tr th:each="p : ${persons}">
-            <!-- UUID dipotong 8 char biar tabel ramping -->
-            <td th:text="${#strings.substring(p.uuid().toString(), 0, 8)}">uuid</td>
-            <td th:text="${p.name()}">name</td>
-            <td th:text="${p.address()}">address</td>
-            <td th:text="${p.birthDate()}">birth date</td>
-            <td th:text="${p.male() ? 'L' : 'P'}">L</td>
-        </tr>
-        </tbody>
+        <tbody id="person-rows"></tbody>
     </table>
 
-    <!-- Info cursor (halaman berikut masih ada / tidak) -->
-    <p th:if="${hasNext}">
-        Masih ada data berikutnya (cursor:
-        <code th:text="${nextCursor}">…</code>).
-    </p>
-    <p th:unless="${hasNext}">Semua data sudah tampil.</p>
+    <p><button id="btn-more" type="button" hidden>Load more</button></p>
+
+    <script>
+        // Cursor pagination: /api/person balikin { content, next_cursor, has_next, size }
+        // (snake_case, ngikutin naming strategy global).
+        let cursor = null;
+        const size = 20;
+        let totalRows = 0;
+
+        const rowsEl = document.getElementById('person-rows');
+        const tableEl = document.getElementById('person-table');
+        const loadingEl = document.getElementById('state-loading');
+        const emptyEl = document.getElementById('state-empty');
+        const errorEl = document.getElementById('state-error');
+        const moreBtn = document.getElementById('btn-more');
+
+        function cell(text) {
+            const td = document.createElement('td');
+            td.textContent = text; // textContent, bukan innerHTML (anti XSS)
+            return td;
+        }
+
+        function addRow(p) {
+            const tr = document.createElement('tr');
+            tr.appendChild(cell(String(p.uuid).slice(0, 8)));
+            tr.appendChild(cell(p.name ?? ''));
+            tr.appendChild(cell(p.address ?? ''));
+            tr.appendChild(cell(p.birth_date ?? ''));
+            tr.appendChild(cell(p.male ? 'L' : 'P'));
+            rowsEl.appendChild(tr);
+            totalRows++;
+        }
+
+        async function loadMore() {
+            errorEl.hidden = true;
+            moreBtn.disabled = true;
+            try {
+                const params = new URLSearchParams({ size: String(size) });
+                if (cursor) params.set('cursor', cursor);
+                const res = await fetch('/api/person?' + params.toString());
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                const page = await res.json();
+                page.content.forEach(addRow);
+                cursor = page.next_cursor;
+                moreBtn.hidden = !page.has_next;
+            } catch (e) {
+                errorEl.textContent = 'Gagal ambil data: ' + e.message;
+                errorEl.hidden = false;
+            } finally {
+                loadingEl.hidden = true;
+                moreBtn.disabled = false;
+                tableEl.hidden = totalRows === 0;
+                emptyEl.hidden = totalRows !== 0;
+            }
+        }
+
+        moreBtn.addEventListener('click', loadMore);
+        loadMore();
+    </script>
 </th:block>
 </body>
 </html>
