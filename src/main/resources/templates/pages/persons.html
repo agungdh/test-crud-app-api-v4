@@ -1,0 +1,46 @@
+<!-- Halaman Persons: view di GET /, datanya dari GET /datas (JSON).
+     Controller mengisi ${persons}, ${hasNext}, ${nextCursor} buat render pertama. -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/app :: shell(title='Persons', activeMenu='persons', content=~{::content})}">
+<body>
+<th:block th:fragment="content">
+    <h1>Persons</h1>
+    <p>Data JSON-nya ada di <a th:href="@{/datas}">/datas</a>
+        (mis. <a th:href="@{/datas(size=5)}">/datas?size=5</a>).</p>
+
+    <!-- State kosong -->
+    <p th:if="${#lists.isEmpty(persons)}">Belum ada data. Tambah via POST /api/persons dulu.</p>
+
+    <!-- Tabel data -->
+    <table th:unless="${#lists.isEmpty(persons)}">
+        <thead>
+        <tr>
+            <th>UUID</th>
+            <th>Name</th>
+            <th>Address</th>
+            <th>Birth date</th>
+            <th>Male</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="p : ${persons}">
+            <!-- UUID dipotong 8 char biar tabel ramping -->
+            <td th:text="${#strings.substring(p.uuid().toString(), 0, 8)}">uuid</td>
+            <td th:text="${p.name()}">name</td>
+            <td th:text="${p.address()}">address</td>
+            <td th:text="${p.birthDate()}">birth date</td>
+            <td th:text="${p.male() ? 'L' : 'P'}">L</td>
+        </tr>
+        </tbody>
+    </table>
+
+    <!-- Info cursor (halaman berikut masih ada / tidak) -->
+    <p th:if="${hasNext}">
+        Masih ada data berikutnya (cursor:
+        <code th:text="${nextCursor}">…</code>).
+    </p>
+    <p th:unless="${hasNext}">Semua data sudah tampil.</p>
+</th:block>
+</body>
+</html>

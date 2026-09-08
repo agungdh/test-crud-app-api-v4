@@ -1,0 +1,31 @@
+<!-- App shell: kerangka utama (header + sidebar + footer).
+     Setiap halaman cukup memanggil fragment ini, contoh:
+     <html th:replace="~{layout/app :: shell(title='Persons', activeMenu='persons', content=~{::content})}">
+-->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:fragment="shell(title, activeMenu, content)">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${title} + ' — Test CRUD App'">Test CRUD App</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+    <!-- Header (atas) -->
+    <div th:replace="~{fragments/header :: header}"></div>
+
+    <div class="shell">
+        <!-- Sidebar (kiri), dikasih tahu menu mana yang aktif -->
+        <div th:replace="~{fragments/sidebar :: sidebar(activeMenu=${activeMenu})}"></div>
+
+        <!-- Isi spesifik tiap halaman disuntik di sini -->
+        <main class="content">
+            <th:block th:replace="${content}"></th:block>
+        </main>
+    </div>
+
+    <!-- Footer (bawah) -->
+    <div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

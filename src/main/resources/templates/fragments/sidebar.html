@@ -1,0 +1,12 @@
+<!-- Component: sidebar. Terima parameter activeMenu biar menu aktif bisa di-highlight.
+     Dipakai dari layout: ~{fragments/sidebar :: sidebar(activeMenu=${activeMenu})} -->
+<aside th:fragment="sidebar(activeMenu)" class="sidebar">
+    <ul>
+        <li th:classappend="${activeMenu == 'persons'} ? 'active'">
+            <a th:href="@{/}">Persons</a>
+        </li>
+        <li>
+            <a th:href="@{/datas(size=5)}">Datas (JSON)</a>
+        </li>
+    </ul>
+</aside>
