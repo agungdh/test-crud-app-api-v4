@@ -97,7 +97,9 @@ columns explicitly, 1:1 with the `BaseEntity` mapping):
   `textContent` (never `innerHTML` — XSS). JSON keys are `snake_case` per the
   global Jackson strategy — JS must use `birth_date`, `next_cursor`, etc.
 - Static assets live in `src/main/resources/static/` and are referenced via
-  `@{...}` URL expressions (e.g. `@{/css/app.css}`).
+  `@{...}` URL expressions (e.g. `@{/css/app.css}`). Third-party frontend
+  libs are self-hosted under `static/vendor/` (no CDN — app works fully
+  offline); `@{...}` keeps them correct under any context-path.
 - `@ControllerAdvice` (`GlobalExceptionHandler`) applies globally: JSON
   methods each carry `@ResponseBody`, so `/api/...` errors are JSON even when
   thrown from a `@Controller`. Exception: 404 negotiates content — `/api/*`
