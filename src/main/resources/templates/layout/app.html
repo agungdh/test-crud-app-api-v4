@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:fragment="shell(title, activeMenu, content)">
 <!--begin::Head-->
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>AdminLTE 4 | Starter Page</title>
+    <title th:text="${title} + ' | Test CRUD App'">Test CRUD App</title>
 
     <!--begin::Theme Init (prevents flash of incorrect theme on load, #6043)-->
     <script>
@@ -69,7 +69,7 @@
     <!--begin::Accessibility Features-->
     <!-- Skip links will be dynamically added by accessibility.js -->
     <meta name="supported-color-schemes" content="light dark" />
-    <link rel="preload" href="./css/adminlte.css" as="style" />
+    <link rel="preload" th:href="@{/css/adminlte.css}" as="style" />
     <!--end::Accessibility Features-->
 
     <!--begin::Fonts-->
@@ -100,7 +100,7 @@
     <!--end::Third Party Plugin(Bootstrap Icons)-->
 
     <!--begin::Required Plugin(AdminLTE)-->
-    <link rel="stylesheet" href="./css/adminlte.css" />
+    <link rel="stylesheet" th:href="@{/css/adminlte.css}" />
     <!--end::Required Plugin(AdminLTE)-->
 </head>
 <!--end::Head-->
@@ -109,15 +109,18 @@
 <!--begin::App Wrapper-->
 <div class="app-wrapper">
     <!--begin::Header-->
+    <div th:replace="~{fragments/header :: header}"></div>
     <!--end::Header-->
     <!--begin::Sidebar-->
+    <div th:replace="~{fragments/sidebar :: sidebar(activeMenu=${activeMenu})}"></div>
     <!--end::Sidebar-->
     <!--begin::App Main-->
     <main class="app-main">
-
+        <th:block th:replace="${content}"></th:block>
     </main>
     <!--end::App Main-->
     <!--begin::Footer-->
+    <div th:replace="~{fragments/footer :: footer}"></div>
     <!--end::Footer-->
 </div>
 <!--end::App Wrapper-->
@@ -138,7 +141,7 @@
         crossorigin="anonymous"
 ></script>
 <!--end::Required Plugin(Bootstrap 5)--><!--begin::Required Plugin(AdminLTE)-->
-<script src="./js/adminlte.js"></script>
+<script th:src="@{/js/adminlte.js}"></script>
 <!--end::Required Plugin(AdminLTE)-->
 <!--begin::OverlayScrollbars Configure-->
 <script>

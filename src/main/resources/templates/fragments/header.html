@@ -1,4 +1,4 @@
-<nav class="app-header navbar navbar-expand bg-body">
+<nav class="app-header navbar navbar-expand bg-body" th:fragment="header">
     <!--begin::Container-->
     <div class="container-fluid">
         <!--begin::Start Navbar Links-->
@@ -16,9 +16,9 @@
             </li>
 
             <li class="nav-item d-none d-md-block">
-                <a href="./index.html" class="nav-link">
+                <a th:href="@{/}" class="nav-link">
                     <i class="bi bi-grid-1x2 me-1" aria-hidden="true"></i>
-                    Live preview
+                    Dashboard
                 </a>
             </li>
             <li class="nav-item d-none d-md-block">
@@ -79,7 +79,7 @@
                         <div class="d-flex">
                             <div class="flex-shrink-0">
                                 <img
-                                        src="./assets/img/user1-128x128.jpg"
+                                        th:src="@{/assets/img/user1-128x128.jpg}"
                                         alt=""
                                         class="img-size-50 rounded-circle me-3"
                                 />
@@ -105,7 +105,7 @@
                         <div class="d-flex">
                             <div class="flex-shrink-0">
                                 <img
-                                        src="./assets/img/user8-128x128.jpg"
+                                        th:src="@{/assets/img/user8-128x128.jpg}"
                                         alt=""
                                         class="img-size-50 rounded-circle me-3"
                                 />
@@ -131,7 +131,7 @@
                         <div class="d-flex">
                             <div class="flex-shrink-0">
                                 <img
-                                        src="./assets/img/user3-128x128.jpg"
+                                        th:src="@{/assets/img/user3-128x128.jpg}"
                                         alt=""
                                         class="img-size-50 rounded-circle me-3"
                                 />
@@ -297,7 +297,7 @@
             <li class="nav-item dropdown user-menu">
                 <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
                     <img
-                            src="./assets/img/user2-160x160.jpg"
+                            th:src="@{/assets/img/user2-160x160.jpg}"
                             class="user-image rounded-circle shadow"
                             alt="Alexander Pierce"
                     />
@@ -307,7 +307,7 @@
                     <!--begin::User Image-->
                     <li class="user-header text-bg-primary">
                         <img
-                                src="./assets/img/user2-160x160.jpg"
+                                th:src="@{/assets/img/user2-160x160.jpg}"
                                 class="rounded-circle shadow"
                                 alt="Alexander Pierce"
                         />

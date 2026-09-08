@@ -5,27 +5,73 @@
       th:replace="~{layout/app :: shell(title='Persons', activeMenu='persons', content=~{::content})}">
 <body>
 <th:block th:fragment="content">
-    <h1>Persons</h1>
-    <p>Data di bawah diambil via <code>fetch('/api/person')</code>, bukan render server.</p>
+    <!--begin::App Content Header-->
+    <div class="app-content-header">
+        <!--begin::Container-->
+        <div class="container-fluid">
+            <!--begin::Row-->
+            <div class="row">
+                <div class="col-sm-6">
+                    <h1 class="mb-0 fs-3">Persons</h1>
+                </div>
+                <div class="col-sm-6">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb float-sm-end">
+                            <li class="breadcrumb-item"><a th:href="@{/}">Home</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Persons</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+            <!--end::Row-->
+        </div>
+        <!--end::Container-->
+    </div>
+    <!--end::App Content Header-->
+    <!--begin::App Content-->
+    <div class="app-content">
+        <!--begin::Container-->
+        <div class="container-fluid">
+            <!--begin::Row-->
+            <div class="row">
+                <div class="col-12">
+                    <!--begin::Card-->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Data Persons</h3>
+                        </div>
+                        <!-- /.card-header -->
+                        <div class="card-body">
+                            <p id="state-loading">Loading…</p>
+                            <p id="state-empty" hidden>Belum ada data. Tambah via POST /api/person dulu.</p>
+                            <p id="state-error" class="text-danger" hidden></p>
 
-    <p id="state-loading">Loading…</p>
-    <p id="state-empty" hidden>Belum ada data. Tambah via POST /api/person dulu.</p>
-    <p id="state-error" hidden></p>
+                            <table id="person-table" class="table table-bordered" hidden>
+                                <thead>
+                                <tr>
+                                    <th>UUID</th>
+                                    <th>Name</th>
+                                    <th>Address</th>
+                                    <th>Birth date</th>
+                                    <th>Male</th>
+                                </tr>
+                                </thead>
+                                <tbody id="person-rows"></tbody>
+                            </table>
 
-    <table id="person-table" hidden>
-        <thead>
-        <tr>
-            <th>UUID</th>
-            <th>Name</th>
-            <th>Address</th>
-            <th>Birth date</th>
-            <th>Male</th>
-        </tr>
-        </thead>
-        <tbody id="person-rows"></tbody>
-    </table>
-
-    <p><button id="btn-more" type="button" hidden>Load more</button></p>
+                            <p><button id="btn-more" type="button" class="btn btn-primary" hidden>Load more</button></p>
+                        </div>
+                        <!-- /.card-body -->
+                    </div>
+                    <!--end::Card-->
+                </div>
+                <!-- /.col -->
+            </div>
+            <!--end::Row-->
+        </div>
+        <!--end::Container-->
+    </div>
+    <!--end::App Content-->
 
     <script>
         // Cursor pagination: /api/person balikin { content, next_cursor, has_next, size }

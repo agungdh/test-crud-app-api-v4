@@ -1,70 +1,73 @@
-<!--begin::App Content Header-->
-<div class="app-content-header">
-    <!--begin::Container-->
-    <div class="container-fluid">
-        <!--begin::Row-->
-        <div class="row">
-            <div class="col-sm-6">
-                <h1 class="mb-0 fs-3">Starter Page</h1>
-            </div>
-            <div class="col-sm-6">
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb float-sm-end">
-                        <li class="breadcrumb-item"><a href="#">Home</a></li>
-                        <li class="breadcrumb-item active" aria-current="page">Starter Page</li>
-                    </ol>
-                </nav>
-            </div>
-        </div>
-        <!--end::Row-->
-    </div>
-    <!--end::Container-->
-</div>
-<!--end::App Content Header-->
-<!--begin::App Content-->
-<div class="app-content">
-    <!--begin::Container-->
-    <div class="container-fluid">
-        <!--begin::Row-->
-        <div class="row">
-            <div class="col-12">
-                <!--begin::Card-->
-                <div class="card">
-                    <div class="card-header">
-                        <h3 class="card-title">Starter Card</h3>
-
-                        <div class="card-tools">
-                            <button
-                                    type="button"
-                                    class="btn btn-tool"
-                                    data-lte-toggle="card-collapse"
-                                    aria-label="Collapse card"
-                            >
-                                <i data-lte-icon="expand" class="bi bi-plus-lg"></i>
-                                <i data-lte-icon="collapse" class="bi bi-dash-lg"></i>
-                            </button>
-                            <button
-                                    type="button"
-                                    class="btn btn-tool"
-                                    data-lte-toggle="card-remove"
-                                    aria-label="Remove card"
-                            >
-                                <i class="bi bi-x-lg"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <!-- /.card-header -->
-                    <div class="card-body">Start creating your amazing application!</div>
-                    <!-- /.card-body -->
-                    <div class="card-footer">The footer of the card</div>
-                    <!-- /.card-footer -->
+<!-- Halaman Dashboard (GET /). Isi cuma fragment "content",
+     layout (header/sidebar/footer) disuntik otomatis dari layout/app. -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/app :: shell(title='Dashboard', activeMenu='dashboard', content=~{::content})}">
+<body>
+<th:block th:fragment="content">
+    <!--begin::App Content Header-->
+    <div class="app-content-header">
+        <!--begin::Container-->
+        <div class="container-fluid">
+            <!--begin::Row-->
+            <div class="row">
+                <div class="col-sm-6">
+                    <h1 class="mb-0 fs-3">Dashboard</h1>
                 </div>
-                <!--end::Card-->
+                <div class="col-sm-6">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb float-sm-end">
+                            <li class="breadcrumb-item"><a th:href="@{/}">Home</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Dashboard</li>
+                        </ol>
+                    </nav>
+                </div>
             </div>
-            <!-- /.col -->
+            <!--end::Row-->
         </div>
-        <!--end::Row-->
+        <!--end::Container-->
     </div>
-    <!--end::Container-->
-</div>
-<!--end::App Content-->
+    <!--end::App Content Header-->
+    <!--begin::App Content-->
+    <div class="app-content">
+        <!--begin::Container-->
+        <div class="container-fluid">
+            <!--begin::Row-->
+            <div class="row">
+                <div class="col-12">
+                    <!--begin::Card-->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title" th:text="'Halo, ' + ${appName} + '!'">Halo!</h3>
+
+                            <div class="card-tools">
+                                <button
+                                        type="button"
+                                        class="btn btn-tool"
+                                        data-lte-toggle="card-collapse"
+                                        aria-label="Collapse card"
+                                >
+                                    <i data-lte-icon="expand" class="bi bi-plus-lg"></i>
+                                    <i data-lte-icon="collapse" class="bi bi-dash-lg"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <!-- /.card-header -->
+                        <div class="card-body">
+                            <p>Kelola data person, datanya diambil via <code>fetch('/api/person')</code>.</p>
+                            <a th:href="@{/person}" class="btn btn-primary">Buka Persons</a>
+                        </div>
+                        <!-- /.card-body -->
+                    </div>
+                    <!--end::Card-->
+                </div>
+                <!-- /.col -->
+            </div>
+            <!--end::Row-->
+        </div>
+        <!--end::Container-->
+    </div>
+    <!--end::App Content-->
+</th:block>
+</body>
+</html>
