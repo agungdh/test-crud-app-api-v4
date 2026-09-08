@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Single-module Spring Boot 4.1.1 / Java 25 (toolchain) / Gradle 9.7.1 wrapper project. Package root: `id.my.agungdh.testcrudappapiv4`. Currently a scaffold — only the application class + `contextLoads` test exist.
+Single-module Spring Boot 4.1.1 / Java 25 (toolchain) / Gradle 9.7.1 wrapper project. Package root: `id.my.agungdh.testcrudappapiv4`. REST JSON API + Thymeleaf server-rendered pages (HTML shell, data via fetch) in one app.
 
 ## Commands
 
@@ -11,6 +11,7 @@ Single-module Spring Boot 4.1.1 / Java 25 (toolchain) / Gradle 9.7.1 wrapper pro
 - Init MinIO bucket (after minio healthy, default bucket `testcrud`): `./gradlew initMinio`
 - Reset postgres (DESTROYS DATA): `./gradlew recreatePostgres`
 - UIs: Adminer `:8083`, redis-commander `:8084`, MinIO console `:9001`.
+- Seeder: `./gradlew seedPersons [-Pcount=500]` (default 1000, headless, needs postgres up).
 
 ## DB / entity conventions (mandatory for every table)
 
@@ -74,12 +75,38 @@ columns explicitly, 1:1 with the `BaseEntity` mapping):
   out-of-range) — never inline `1..100` bounds per service/endpoint.
 - Update endpoints are PUT full-replace only (never PATCH): `@PutMapping("/{uuid}")` + `@Valid @RequestBody` reuses the same create Request DTO, all required fields must be present (`@NotBlank/@NotNull` → missing/null is 400); update mappers must declare `nullValuePropertyMappingStrategy = SET_TO_NULL` so an explicit `null` on a nullable/optional field overwrites to NULL instead of being ignored. No `@PatchMapping`, no partial DTOs, no manual `if (field != null)` guards; `IGNORE` strategy is forbidden for updates.
 
+## Web / Thymeleaf conventions
+
+- One controller per domain serves BOTH view and JSON: use `@Controller`
+  (never `@RestController` for these), JSON methods each marked `@ResponseBody`,
+  view methods return a template name with no `Model` data.
+  Current routes: `GET /` → dashboard (`web.DashboardController`),
+  `GET /person` → HTML shell (`person.PersonController#view`),
+  `/api/person...` → JSON CRUD (same `PersonController`).
+- Views render the HTML shell ONLY — all data goes over `fetch()` to the
+  `/api/...` JSON endpoints. Never populate tables via `Model` (server render
+  is for shell/layout, not data).
+- Layout: `templates/layout/app.html :: shell(title, activeMenu, content)`
+  (header + sidebar + `<main>` + footer). Components are
+  `fragments/header|sidebar|footer` (`th:fragment`, sidebar takes an
+  `activeMenu` param for highlight). Pages in `templates/pages/*.html` call
+  `th:replace="~{layout/app :: shell(..., content=~{::content})}"` and put
+  page-specific markup in a `th:fragment="content"` block.
+- Page JS is vanilla (no build step), inline in the template: `fetch()` the
+  list endpoint, cursor-paginate via `next_cursor`/`has_next`, render rows with
+  `textContent` (never `innerHTML` — XSS). JSON keys are `snake_case` per the
+  global Jackson strategy — JS must use `birth_date`, `next_cursor`, etc.
+- Static assets live in `src/main/resources/static/` and are referenced via
+  `@{...}` URL expressions (e.g. `@{/css/app.css}`).
+- `@RestControllerAdvice` (`GlobalExceptionHandler`) applies globally, so
+  `/api/...` errors are JSON even when thrown from a `@Controller`.
+
 ## Gotchas — read before coding
 
-- `src/main/resources/db/migration/` does **not** exist yet, but `application.yaml` sets `flyway.enabled: true` + `jpa.hibernate.ddl-auto: validate`. App/test context **fails to start** until you add a Flyway migration for every entity. Always create `V<n>__*.sql` alongside new entities.
+- `application.yaml` sets `flyway.enabled: true` + `jpa.hibernate.ddl-auto: validate`. App/test context **fails to start** until you add a Flyway migration for every entity. Always create `V<n>__*.sql` alongside new entities.
 - `@SpringBootTest contextLoads` requires live Postgres (`127.0.0.1:5432`, db `crud`, user/pass `admin`/`admin`) AND Valkey/Redis (`127.0.0.1:6379`, password `admin`). Start compose before `./gradlew test`.
 - Config is env-overridable: `SPRING_DATASOURCE_URL/USERNAME/PASSWORD`, `SPRING_DATA_REDIS_HOST/PORT/PASSWORD`. Defaults already match `docker-compose.yml`.
 - MinIO image is `pgsty/silo:latest` (S3-compatible), not official MinIO; `mcli` CLI is available inside the container (used by `initMinio`).
 - MapStruct `1.6.3` + Lombok are annotation-processor wired — keep `@Mapper` interfaces + `annotationProcessor` deps intact; plain `javac` without Gradle will miss generated impls.
 - Virtual threads enabled (`spring.threads.virtual.enabled=true`); `open-in-view: false` — don't rely on lazy loading in controllers.
-- CI (`.github/workflows/build.yml`) builds the jar then runs `docker build` with `context: .`, but there is **no Dockerfile** in repo yet — don't assume container build works.
+- CI (`.github/workflows/build.yml`) builds the jar then runs `docker build` with `context: .` using the repo-root `Dockerfile`.
