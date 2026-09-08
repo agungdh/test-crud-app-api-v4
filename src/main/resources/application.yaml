@@ -43,3 +43,9 @@ spring:
           max-active: 8
           max-idle: 8
           min-idle: 0
+logging:
+  level:
+    # Matikan log "Resolved [...]" tiap handled exception (404 aset,
+    # 400 validasi, dll — responden JSON-nya sudah cukup). Error 500
+    # beneran tetap ke-log manual di GlobalExceptionHandler#handleFallback.
+    org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: ERROR
