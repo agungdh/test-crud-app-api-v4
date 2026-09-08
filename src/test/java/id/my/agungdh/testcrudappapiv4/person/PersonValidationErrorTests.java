@@ -24,7 +24,7 @@ class PersonValidationErrorTests {
     void validationFieldIsSnakeCase() throws Exception {
         String body = """
                 {"name":"x","address":"y","birth_date":"2999-01-01","male":true}""";
-        mockMvc.perform(post("/api/persons").contentType(MediaType.APPLICATION_JSON).content(body))
+        mockMvc.perform(post("/api/person").contentType(MediaType.APPLICATION_JSON).content(body))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.errors[0].field").value("birth_date"))
                 .andExpect(jsonPath("$.trace").doesNotExist())
@@ -33,10 +33,10 @@ class PersonValidationErrorTests {
 
     @Test
     void sortErrorListsSnakeCaseFields() throws Exception {
-        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get("/api/persons")
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get("/api/person")
                         .param("sort", "birthDate,desc"))
                 .andExpect(status().isOk());
-        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get("/api/persons")
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get("/api/person")
                         .param("sort", "nope,desc"))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("birth_date")));

@@ -19,7 +19,7 @@ class CorsTests {
 
     @Test
     void preflightFromLocalhost4200IsAllowed() throws Exception {
-        mockMvc.perform(options("/api/persons")
+        mockMvc.perform(options("/api/person")
                         .header("Origin", "http://localhost:4200")
                         .header("Access-Control-Request-Method", "POST"))
                 .andExpect(status().isOk())
@@ -28,7 +28,7 @@ class CorsTests {
 
     @Test
     void preflightFromUnknownOriginIsRejected() throws Exception {
-        mockMvc.perform(options("/api/persons")
+        mockMvc.perform(options("/api/person")
                         .header("Origin", "http://evil.example")
                         .header("Access-Control-Request-Method", "POST"))
                 .andExpect(status().isForbidden());

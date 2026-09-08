@@ -1,4 +1,4 @@
-<!-- Halaman Persons: view di GET /, datanya dari GET /datas (JSON).
+<!-- Halaman Persons: view di GET /person, datanya dari GET /api/person (JSON).
      Controller mengisi ${persons}, ${hasNext}, ${nextCursor} buat render pertama. -->
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
@@ -6,11 +6,11 @@
 <body>
 <th:block th:fragment="content">
     <h1>Persons</h1>
-    <p>Data JSON-nya ada di <a th:href="@{/datas}">/datas</a>
-        (mis. <a th:href="@{/datas(size=5)}">/datas?size=5</a>).</p>
+    <p>Data JSON-nya ada di <a th:href="@{/api/person}">/api/person</a>
+        (mis. <a th:href="@{/api/person(size=5)}">/api/person?size=5</a>).</p>
 
     <!-- State kosong -->
-    <p th:if="${#lists.isEmpty(persons)}">Belum ada data. Tambah via POST /api/persons dulu.</p>
+    <p th:if="${#lists.isEmpty(persons)}">Belum ada data. Tambah via POST /api/person dulu.</p>
 
     <!-- Tabel data -->
     <table th:unless="${#lists.isEmpty(persons)}">

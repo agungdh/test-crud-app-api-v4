@@ -1,0 +1,24 @@
+<!-- Halaman Dashboard (GET /). -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/app :: shell(title='Dashboard', activeMenu='dashboard', content=~{::content})}">
+<body>
+<th:block th:fragment="content">
+    <h1>Dashboard</h1>
+    <p th:text="'Halo, ' + ${appName} + '!'">Halo!</p>
+
+    <div class="cards">
+        <div class="card">
+            <h2>Persons</h2>
+            <p>Halaman HTML + tabel dari DB.</p>
+            <a th:href="@{/person}">Buka →</a>
+        </div>
+        <div class="card">
+            <h2>API JSON</h2>
+            <p>Data mentah buat fetch/AJAX.</p>
+            <a th:href="@{/api/person(size=5)}">Lihat /api/person →</a>
+        </div>
+    </div>
+</th:block>
+</body>
+</html>

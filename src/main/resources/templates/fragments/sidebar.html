@@ -2,11 +2,11 @@
      Dipakai dari layout: ~{fragments/sidebar :: sidebar(activeMenu=${activeMenu})} -->
 <aside th:fragment="sidebar(activeMenu)" class="sidebar">
     <ul>
-        <li th:classappend="${activeMenu == 'persons'} ? 'active'">
-            <a th:href="@{/}">Persons</a>
+        <li th:classappend="${activeMenu == 'dashboard'} ? 'active'">
+            <a th:href="@{/}">Dashboard</a>
         </li>
-        <li>
-            <a th:href="@{/datas(size=5)}">Datas (JSON)</a>
+        <li th:classappend="${activeMenu == 'persons'} ? 'active'">
+            <a th:href="@{/person}">Persons</a>
         </li>
     </ul>
 </aside>

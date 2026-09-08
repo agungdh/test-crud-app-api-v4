@@ -18,19 +18,19 @@ class PersonListPagingTests {
 
     @Test
     void rejectsOversizedPage() throws Exception {
-        mockMvc.perform(get("/api/persons").param("size", "101"))
+        mockMvc.perform(get("/api/person").param("size", "101"))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
     void rejectsZeroSize() throws Exception {
-        mockMvc.perform(get("/api/persons").param("size", "0"))
+        mockMvc.perform(get("/api/person").param("size", "0"))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
     void defaultSizeIsAccepted() throws Exception {
-        mockMvc.perform(get("/api/persons"))
+        mockMvc.perform(get("/api/person"))
                 .andExpect(status().isOk());
     }
 }
