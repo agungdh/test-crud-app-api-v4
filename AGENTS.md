@@ -98,8 +98,11 @@ columns explicitly, 1:1 with the `BaseEntity` mapping):
   global Jackson strategy — JS must use `birth_date`, `next_cursor`, etc.
 - Static assets live in `src/main/resources/static/` and are referenced via
   `@{...}` URL expressions (e.g. `@{/css/app.css}`).
-- `@RestControllerAdvice` (`GlobalExceptionHandler`) applies globally, so
-  `/api/...` errors are JSON even when thrown from a `@Controller`.
+- `@ControllerAdvice` (`GlobalExceptionHandler`) applies globally: JSON
+  methods each carry `@ResponseBody`, so `/api/...` errors are JSON even when
+  thrown from a `@Controller`. Exception: 404 negotiates content — `/api/*`
+  or `Accept: application/json` gets JSON, browsers get the Thymeleaf page
+  `templates/pages/error/404.html`.
 
 ## Gotchas — read before coding
 

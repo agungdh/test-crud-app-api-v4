@@ -9,15 +9,19 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.slf4j.LoggerFactory;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 /**
@@ -28,12 +32,13 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
  * <em>keys</em> — the <em>value</em> of Spring's default {@code field} string
  * stays camelCase ({@code birthDate}). Hence the explicit translation here.
  */
-@RestControllerAdvice
+@ControllerAdvice
 public class GlobalExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
+    @ResponseBody
     public ResponseEntity<ApiErrorResponse> handleBodyValidation(
             MethodArgumentNotValidException ex, HttpServletRequest request) {
         List<FieldViolation> errors = new ArrayList<>();
@@ -45,6 +50,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
+    @ResponseBody
     public ResponseEntity<ApiErrorResponse> handleParamValidation(
             ConstraintViolationException ex, HttpServletRequest request) {
         List<FieldViolation> errors = ex.getConstraintViolations().stream()
@@ -55,12 +61,14 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
+    @ResponseBody
     public ResponseEntity<ApiErrorResponse> handleUnreadable(
             HttpMessageNotReadableException ex, HttpServletRequest request) {
         return error(HttpStatus.BAD_REQUEST, "Malformed JSON request", request, List.of());
     }
 
     @ExceptionHandler({MethodArgumentTypeMismatchException.class, MissingServletRequestParameterException.class})
+    @ResponseBody
     public ResponseEntity<ApiErrorResponse> handleBadParam(Exception ex, HttpServletRequest request) {
         String field = null;
         Object rejected = null;
@@ -77,6 +85,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(ResponseStatusException.class)
+    @ResponseBody
     public ResponseEntity<ApiErrorResponse> handleStatus(
             ResponseStatusException ex, HttpServletRequest request) {
         HttpStatus status = HttpStatus.resolve(ex.getStatusCode().value());
@@ -87,12 +96,28 @@ public class GlobalExceptionHandler {
         return error(status, message, request, List.of());
     }
 
+    /**
+     * 404 dengan content negotiation: request ke {@code /api/*} atau yang
+     * Accept-nya JSON tetap dapat JSON; browser (HTML) dapat halaman
+     * {@code templates/pages/error/404.html} yang di-render Thymeleaf.
+     */
     @ExceptionHandler(NoResourceFoundException.class)
-    public ResponseEntity<ApiErrorResponse> handleNotFound(NoResourceFoundException ex, HttpServletRequest request) {
-        return error(HttpStatus.NOT_FOUND, "Not found: " + ex.getResourcePath(), request, List.of());
+    public Object handleNotFound(NoResourceFoundException ex, HttpServletRequest request) {
+        String uri = request.getRequestURI();
+        String accept = request.getHeader("Accept");
+        boolean wantsJson = uri.startsWith("/api/")
+                || (accept != null && accept.contains(MediaType.APPLICATION_JSON_VALUE));
+        if (wantsJson) {
+            return error(HttpStatus.NOT_FOUND, "Not found: " + ex.getResourcePath(), request, List.of());
+        }
+        ModelAndView mav = new ModelAndView("pages/error/404");
+        mav.setStatus(HttpStatus.NOT_FOUND);
+        mav.addObject("path", uri);
+        return mav;
     }
 
     @ExceptionHandler(Exception.class)
+    @ResponseBody
     public ResponseEntity<ApiErrorResponse> handleFallback(Exception ex, HttpServletRequest request) {
         // Satu-satunya error yang di-log: 500 tak terduga (stack trace ikut).
         log.error("Unhandled exception for {} {}", request.getMethod(), request.getRequestURI(), ex);
